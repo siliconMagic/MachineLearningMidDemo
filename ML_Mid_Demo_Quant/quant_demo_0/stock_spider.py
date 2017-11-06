@@ -128,8 +128,8 @@ class StockCapital(object):
 		self.code     = code
 
 	def crawl_data(self,page):
-		object_url = StockCapital.url +str(self.code) + "," + str(page-1) + ".html"
-		# print(object_url)
+		object_url = StockCapital.url +str(self.code) + "," + str(page) + ".html"
+		print(object_url)
 		html = requests.get(object_url, headers=_headers_0).content
 		soup = BeautifulSoup(html, "html.parser", from_encoding='utf-8')
 		table = soup('table',{'class':'table_bg001 border_box'})[0]
@@ -146,7 +146,7 @@ class StockCapital(object):
 		# 构建csv表格
 		csv_file = open('./stock_data/'+str(self.code)+'_hist_capital.csv','wb')
 		capital = csv.writer(csv_file)
-		table_attr, stock_data = self.crawl_data(1)
+		# table_attr, stock_data = self.crawl_data(1)
 		# 处理属性行 将数据属性写入文件
 		'''
 		print(type(table_attr))
@@ -156,17 +156,19 @@ class StockCapital(object):
 		print(attr)
 		'''
 		try:
-			capital.writerow(table_attr)
-			for i in range(1,self.max_page+1):
-				print('page %d data is crawling...' % i)
-				table_attr, stock_attr = self.crawl_data(i)
+			for i in range(self.max_page,0,-1):
+				print('%d page %d data is crawling...' % (self.code, i))
+				table_attr, stock_data = self.crawl_data(i)
+				if i == self.max_page:
+					capital.writerow(table_attr)
 				# 处理数据行
-				for day_data in stock_data:
+				for day_data in stock_data:	
 					# 构建一个日数据列表
 					csv_row = []
-					for item in day_data.find_all('td'):
+					for item in day_data.find_all('td'):	
 						csv_row.append(item.get_text().replace(',','').replace('\n',''))
-					capital.writerow(csv_row)
+					if csv_row != []:
+						capital.writerow(csv_row)
 		except Exception,e:
 			print("writer error!",e)
 		finally:
@@ -174,21 +176,21 @@ class StockCapital(object):
 			csv_file.close()
 
 '''
-601988中国银行的股票代号
+601988中国银行;600519为贵州茅台
 2006为start_year
 2017为end_year
 '''
 def main_trade():
-	_spider = StockSpider(601988,2006,2017)
+	_spider = StockSpider(600519,2006,2017)
 	_spider.data_to_csv()
 
 def main_capital():
-	_spider = StockCapital(21)
+	_spider = StockCapital(21,601988)
 	# _spider.crawl_data(1)
 	_spider.data_to_csv()
 
 
 if __name__ == '__main__':
-	main_trade()
+	# main_trade()
 	main_capital()
 	
