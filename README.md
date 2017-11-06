@@ -6,3 +6,6 @@ Take Machine Learning and Stat for forecasting financial market data
 
 ## Version: 1.0
 目前代码是第一版本，Arima模型尚有不完备的地方，待课程进度继续后，将会对该版本的代码进行修改。
+
+## Version: 1.1
+增加了爬虫功能，爬取网易财经的数据，测试案例是中国银行和贵州茅台的交易数据以及资金流向数据的爬取
