@@ -9,6 +9,7 @@ import numpy as np
 import datetime
 import time
 # import pandas_datareader as web 该接口出现bad handshake Error
+import xgboost as xgb
 import tushare as ts
 import math
 import matplotlib.pyplot as plt
@@ -84,13 +85,16 @@ def forecast_data(boc_df):
     clf = LinearRegression()
     clf.fit(X_train, y_train)
     accuracy = clf.score(X_test, y_test)
+    forecast_set = clf.predict(X_delay)
     # test_size=0.10时准确率为91.5%
     # print accuracy
     # 测试使用SVM的效果
-    svm_forecast(X_train, y_train, X_test, y_test, X_delay)
+    # svm_forecast(X_train, y_train, X_test, y_test, X_delay)
 
-    forecast_set = clf.predict(X_delay)
-    print forecast_set, accuracy, forecast_out
+    # 测试使用xgboost的效果
+    xgboost_forecast(X_train, y_train, X_test, y_test, X_delay)
+
+    print(forecast_set, accuracy, forecast_out)
     return forecast_set
 
 """
@@ -104,11 +108,17 @@ def svm_forecast(X_train, y_train, X_test, y_test, X_delay):
         # 测试结果显示rbf核的效果比较好
         if k == 'rbf':
             forecast_set = clf.predict(X_delay)
-            print 'svm(rbf) predict ',forecast_set
+            print("svm(rbf) predict ",forecast_set)
         accuracy = clf.score(X_test, y_test)
-        print "accuracy in svm ", accuracy
+        print("accuracy in svm ",accuracy)
     return forecast_set
 
+"""
+利用xgboost进行数据预测
+"""
+def xgboost_forecast(X_train, y_train, X_test, y_test, X_delay):
+    gbm = xgb.XGBClassifier(max_depth=3, n_estimators=300, learning_rate=0.05).fit(X_train, y_train)
+    print("xgboost forecast " , gbm.predict(X_delay))
 
 def plot_function(forecast_set, boc_df):
     """
@@ -132,7 +142,7 @@ def plot_function(forecast_set, boc_df):
         next_sec += day_sec
         boc_df.loc[next_date] = [np.nan for _ in range(len(boc_df.columns)-1)]+[i]
 
-    print boc_df.tail(50)
+    print(boc_df.tail(50))
     boc_df['close'].plot()
     boc_df['forecast'].plot()
     plt.ylabel('BOC_price')

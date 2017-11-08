@@ -191,6 +191,6 @@ def main_capital():
 
 
 if __name__ == '__main__':
-	# main_trade()
+	main_trade()
 	main_capital()
 	
